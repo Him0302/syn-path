@@ -31,7 +31,9 @@ class Patient:
         self.sickness = 0
         self.outcomes = {'queue_penalty': 1000000, 'clinical_penalty': 100}
         self.history = []
-        self.queue_time = 0
+        self.queue_time = np.random.randint(0, 11)
+
+
             
     # --- Patient disease occurrence ---
     @staticmethod

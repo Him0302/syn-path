@@ -75,7 +75,7 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
                     queue_penalty = p.queue_time ** 2  # Quadratic penalty
                     clinical_penalty = np.exp(p.outcomes['clinical_penalty'] / 50) # Exponential penalty
                     action_cost = actions[next_a].cost if next_a in actions else 0
-                    reward = - 0.25 * action_cost - 0.5 * clinical_penalty - 0.0001 * queue_penalty - 0.5 * system_state
+                    reward = - 0.25 * action_cost - 0.5 * clinical_penalty - 0.0001 * queue_penalty 
                     rewards.append(reward)
                     q_threshold_rewards.append((pw.name, next_a, reward))
                     for (q_state, next_a), reward in zip(q_state_action_pairs, rewards):
