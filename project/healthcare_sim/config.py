@@ -1,10 +1,11 @@
 NUM_PATIENTS = 5
-NUM_PATHWAYS = 10
-NUM_ACTIONS = 10
+NUM_PATHWAYS = 5
+NUM_ACTIONS = 4
 NUM_STEPS = 15
 BASE_CAPACITY = 10
-AGE_THRESHOLD = 60
-PROBABILITY_OF_DISEASE = 0.15
+
+import numpy as np
+import random
 
 # --- Ideal clinical values ---
 IDEAL_CLINICAL_VALUES = {
@@ -15,13 +16,8 @@ IDEAL_CLINICAL_VALUES = {
     'mental_health': 80,
 }
 
-INPUT_ACTIONS = ['a0', 'a1']  # Two standard input actions- random actions assigned at the start of a pathway
-OUTPUT_ACTIONS = 'a4'       # Standard output action 
+INPUT_ACTIONS = 'a0'  # Two standard input actions- random actions assigned at the start of a pathway
+OUTPUT_ACTIONS = 'a2'       # Standard output action 
 
-#np.random.seed(0)
-#random.seed(0)
-
-# --- Q-learning parameters ---
-ALPHA = 0.1  # Learning rate
-GAMMA = 0.9  # Discount factor
-EPSILON = 0.1  # Exploration rate
+np.random.seed(42)
+random.seed(42)

@@ -33,18 +33,18 @@ class Action:
             fluctuation = np.random.uniform(0.8, 1.2)
             self.capacity = int(self.base_capacity * fluctuation)
 
-    def assign(self, patient):
-        """
-        Assigns a patient to the action's queue based on their priority.
-        - Patients with lower clinical_penalty (worse clinical outcome) and lower queue_penalty (longer wait) get a lower priority_score.
-        - Since heapq is a min-heap, patients with the lowest priority_score are popped first and served earlier.
-        - This ensures that sicker patients and those who have waited longer are prioritized in the queue.
-        """
-        import heapq
+    # def assign(self, patient):
+    #     """
+    #     Assigns a patient to the action's queue based on their priority.
+    #     - Patients with lower clinical_penalty (worse clinical outcome) and lower queue_penalty (longer wait) get a lower priority_score.
+    #     - Since heapq is a min-heap, patients with the lowest priority_score are popped first and served earlier.
+    #     - This ensures that sicker patients and those who have waited longer are prioritized in the queue.
+    #     """
+    #     import heapq
                 
-        # Combine priority level and outcomes score for sorting
-        priority_score = patient.outcomes['clinical_penalty'] + 0.005*patient.outcomes['queue_penalty']
-        heapq.heappush(self.queue, (priority_score, patient.pid, patient))
+    #     # Combine priority level and outcomes score for sorting
+    #     priority_score = patient.outcomes['clinical_penalty'] + 0.005*patient.outcomes['queue_penalty']
+    #     heapq.heappush(self.queue, (priority_score, patient.pid, patient))
         
     
     def update_log(self, patient, pathway, current_action, step, activity_log):
@@ -74,31 +74,34 @@ class Action:
         - Returns a tuple containing:
             - finished_patients: List of patients who have completed this action during this step.
             - cost: Total cost incurred by the action for this step (number of finished patients multiplied by the action's cost).
-        """
-        import heapq
+        # """
+        # import heapq
         
-        # Update in-progress patients
-        finished_patients = []
-        new_in_progress = []
-        for patient, remaining_time in self.in_progress:
-            if remaining_time > 1:
-                new_in_progress.append((patient, remaining_time - 1))
-            else:
-                finished_patients.append(patient)
-        self.in_progress = new_in_progress
+        # # Update in-progress patients
+        # finished_patients = []
+        # new_in_progress = []
+        for patient in self.in_progress:
+        #     if remaining_time > 1:
+        #         new_in_progress.append((patient, remaining_time - 1))
+        #     else:
+        #         finished_patients.append(patient)
+        # self.in_progress = new_in_progress
 
-        # Move patients from queue to in-progress if capacity allows
-        available_slots = self.capacity - len(self.in_progress)
-        for _ in range(available_slots):
-            if self.queue:
-                _, _, patient = heapq.heappop(self.queue)
-                patient.queue_time += 1  # Still count as queue time until assigned?
-                patient.apply_action(self.effect, IDEAL_CLINICAL_VALUES)
-                patient.score_outcomes(IDEAL_CLINICAL_VALUES)
-                self.in_progress.append((patient, self.duration))
-        self.schedule.append(len(self.in_progress))
+        # # Move patients from queue to in-progress if capacity allows
+        # available_slots = self.capacity - len(self.in_progress)
+        # for _ in range(available_slots):
+        #     if self.queue:
+        #         _, _, patient = heapq.heappop(self.queue)
+        #         patient.queue_time += 1  # Still count as queue time until assigned?
+        #         patient.apply_action(self.effect, IDEAL_CLINICAL_VALUES)
+        #         patient.score_outcomes(IDEAL_CLINICAL_VALUES)
+        #         self.in_progress.append((patient, self.duration))
+        # self.schedule.append(len(self.in_progress))
 
         # Return finished patients and cost
+            patient.apply_action(self.effect, IDEAL_CLINICAL_VALUES)
+            patient.score_outcomes(IDEAL_CLINICAL_VALUES)
+            self.in_progress.append((patient, self.duration))
         return finished_patients, len(finished_patients) * self.cost
             
     def reset(self):

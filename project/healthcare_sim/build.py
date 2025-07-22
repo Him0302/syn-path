@@ -50,7 +50,7 @@ def initialize_simulation(Action, Pathway, NUM_PATIENTS=100, NUM_PATHWAYS=10, NU
         for i in range(NUM_ACTIONS)
     }
 
-    intermediate_actions = [a for a in actions if a not in input_actions + [output_actions]]
+    intermediate_actions = [a for a in actions if a not in input_actions + output_actions]
 
     threshold_matrix = {
         f'P{p}': {

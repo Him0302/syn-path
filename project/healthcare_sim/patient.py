@@ -1,4 +1,5 @@
 class Patient:
+    pathway_counter = 0
     """
     Represents a patient in the healthcare simulation.
 
@@ -25,7 +26,9 @@ class Patient:
         else:
             self.age_group = 'elderly'
         self.sex = np.random.choice(['M', 'F'])
-        self.diseases = {f'P{p}': False for p in range(NUM_PATHWAYS)}
+        assigned_pathway = Patient.pathway_counter % NUM_PATHWAYS
+        self.diseases = {f'P{p}': (p == assigned_pathway) for p in range(NUM_PATHWAYS)}
+        Patient.pathway_counter += 1  # Increment for the next patient
         self.comorbidities = 0
         self.clinical = {k: np.random.normal(v, 0.4*v) for k, v in IDEAL_CLINICAL_VALUES.items()}
         self.sickness = 0
@@ -34,29 +37,29 @@ class Patient:
         self.queue_time = 0
             
     # --- Patient disease occurrence ---
-    @staticmethod
-    def progress_diseases(patient, pathway, actions, input_actions, PROBABILITY_OF_DISEASE):
-        """
-        Simulates disease occurrence for a patient in a given pathway.
+    # @staticmethod
+    # def progress_diseases(patient, pathway, actions, input_actions, PROBABILITY_OF_DISEASE):
+    #     """
+    #     Simulates disease occurrence for a patient in a given pathway.
 
-        This method performs two main functions:
-        1. Disease Occurrence: With a fixed probability, the patient may acquire a new disease in the specified pathway.
-        If disease occurs, the patient's disease status for the pathway is set to True, an initial action is assigned,
-        and the action is recorded in the patient's history.
+    #     This method performs two main functions:
+    #     1. Disease Occurrence: With a fixed probability, the patient may acquire a new disease in the specified pathway.
+    #     If disease occurs, the patient's disease status for the pathway is set to True, an initial action is assigned,
+    #     and the action is recorded in the patient's history.
 
-        Args:
-            patient (Patient): The patient object whose state is being updated.
-            pathway (str): The pathway code (e.g., 'P0', 'P1', etc.) to check for disease progression.
-        """
-        import numpy as np
-        import random
+    #     Args:
+    #         patient (Patient): The patient object whose state is being updated.
+    #         pathway (str): The pathway code (e.g., 'P0', 'P1', etc.) to check for disease progression.
+    #     """
+    #     import numpy as np
+    #     import random
 
-        if patient.diseases[pathway] == False and np.random.rand() < PROBABILITY_OF_DISEASE:
-            patient.diseases[pathway] = True
-            start_action = random.choice(input_actions)
-            actions[start_action].assign(patient)
-            patient.history.append((start_action,pathway))  
-        patient.comorbidities = sum(patient.diseases.values())
+    #     if patient.diseases[pathway] == False and np.random.rand() < PROBABILITY_OF_DISEASE:
+    #         patient.diseases[pathway] = True
+    #         start_action = random.choice(input_actions)
+    #         actions[start_action].assign(patient)
+    #         patient.history.append((start_action,pathway))  
+    #     patient.comorbidities = sum(patient.diseases.values())
       
             
     # --- Patient clinical variable updates ---
