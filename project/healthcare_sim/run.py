@@ -2,6 +2,7 @@ import numpy as np
 from collections import defaultdict
 from healthcare_sim.config import NUM_STEPS, ALPHA, GAMMA
 import copy
+import matplotlib.pyplot as plt
 
 """
 This step simulates the flow of patients through the healthcare system. The simulation tracks the clinical variables of each patient, 
@@ -117,6 +118,46 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
             act.reset()  # Reset each Action object for the next major step
             
     end_time = time.time()
-    print(f"Run completed in {end_time - start_time:.2f} seconds")        
+    print(f"Run completed in {end_time - start_time:.2f} seconds")
+
+        # Get rewards per timestep across all major steps
+    rewards_all = get_rewards_per_timestep_all(q_threshold_rewards_major)
+
+    # Compute average reward per timestep
+    avg_rewards_all = [np.mean(r) if r else np.nan for r in rewards_all]
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(avg_rewards_all)), avg_rewards_all, label='Average Reward per Timestep',     color='green', marker='o')
+    plt.xlabel('Timestep')
+    plt.ylabel('Average Reward')
+    plt.title('Average Reward per Timestep (Across All Steps)')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    # Return all major step results                                                                                             
+    
+    
+            
     return actions_major, pathways_major, system_cost_major, q_threshold_rewards_major, activity_log_major, q_table_major, q_value_history, clinical_penalty_history, queue_length_history
             
+    # Plot average reward per timestep for first and last major steps
+
+# Helper: extract rewards per timestep from q_threshold_rewards_major
+def get_rewards_per_timestep_all(q_threshold_rewards_major, num_timesteps=NUM_STEPS):
+    # Flatten all (pathway, action, reward) tuples across all major steps
+    rewards_flat = []
+    for step_rewards in q_threshold_rewards_major.values():
+        rewards_flat.extend(step_rewards)
+
+    # Now chunk the flat rewards list into timesteps
+    rewards_per_step = [[] for _ in range(num_timesteps)]
+    chunk_size = len(rewards_flat) // num_timesteps
+
+    for i in range(num_timesteps):
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if i < num_timesteps - 1 else len(rewards_flat)
+        rewards_per_step[i] = [r[2] for r in rewards_flat[start:end]]
+
+    return rewards_per_step
