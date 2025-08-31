@@ -92,7 +92,7 @@ class Action:
         for _ in range(available_slots):
             if self.queue:
                 _, _, patient = heapq.heappop(self.queue)
-                # patient.queue_time += 1  # Still count as queue time until assigned?
+                patient.queue_time += 1  # Still count as queue time until assigned?
                 patient.apply_action(self.effect, IDEAL_CLINICAL_VALUES)
                 patient.score_outcomes(IDEAL_CLINICAL_VALUES)
                 self.in_progress.append((patient, self.duration))

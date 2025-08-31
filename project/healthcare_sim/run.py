@@ -50,6 +50,7 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
         sum_cost = 0
         activity_log = []
         q_table = defaultdict(lambda: defaultdict(float))
+        all_rewards_by_step = defaultdict(list)
         for p in patients:
             p.diseases = {f'P{p}': False for p in range(NUM_PATHWAYS)}
         for step in range(NUM_STEPS):
@@ -79,6 +80,7 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
                     reward = - 0.25 * action_cost - 0.5 * clinical_penalty - 0.0001 * queue_penalty 
                     rewards.append(reward)
                     q_threshold_rewards.append((pw.name, next_a, reward))
+                    all_rewards_by_step[step].append(reward)
                     for (q_state, next_a), reward in zip(q_state_action_pairs, rewards):
                         q_table[q_state][next_a] += ALPHA * (reward + GAMMA * max(q_table[q_state].values()) - q_table[q_state][next_a])
                     
@@ -104,9 +106,9 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
         q_threshold_rewards_major[major_step] = copy.deepcopy(q_threshold_rewards)
         q_table_major[major_step] = copy.deepcopy(q_table)
 
-        print(f"this is al {activity_log}")
-        print(f"this is qr {q_threshold_rewards}")
-        print(f"this is qt {q_table}")
+        # print(f"this is al {activity_log}")
+        # print(f"this is qr {q_threshold_rewards}")
+        # print(f"this is qt {q_table}")
 
         # **Add this AFTER the first major step finishes:**
         if major_step == 0:
@@ -120,23 +122,34 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
     end_time = time.time()
     print(f"Run completed in {end_time - start_time:.2f} seconds")
 
-        # Get rewards per timestep across all major steps
-    rewards_all = get_rewards_per_timestep_all(q_threshold_rewards_major)
+    # # Get rewards per timestep across all major steps
+    # rewards_all = get_rewards_per_timestep_all(q_threshold_rewards_major)
 
-    # Compute average reward per timestep
-    avg_rewards_all = [np.mean(r) if r else np.nan for r in rewards_all]
+    # # Plot reward directly per timestep
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(range(len(rewards_all)), rewards_all, label='Reward per Timestep', color='green',  marker='o')
+    # plt.xlabel('Timestep')
+    # plt.ylabel('Reward')
+    # plt.title('Reward per Timestep (Across All Steps)')
+    # plt.xlim(left=0)
+    # plt.legend()
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.show()
 
-    # Plot
+    avg_rewards_all = get_avg_rewards_per_timestep_single(all_rewards_by_step, NUM_STEPS)
+
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(avg_rewards_all)), avg_rewards_all, label='Average Reward per Timestep',     color='green', marker='o')
     plt.xlabel('Timestep')
     plt.ylabel('Average Reward')
     plt.title('Average Reward per Timestep (Across All Steps)')
+    plt.xlim(left=0)
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    # Return all major step results                                                                                             
+                                                                       
     
     
             
@@ -144,20 +157,33 @@ def run_simulation(Patient, patients, pathways, actions, OUTPUT_ACTIONS, INPUT_A
             
     # Plot average reward per timestep for first and last major steps
 
-# Helper: extract rewards per timestep from q_threshold_rewards_major
-def get_rewards_per_timestep_all(q_threshold_rewards_major, num_timesteps=NUM_STEPS):
-    # Flatten all (pathway, action, reward) tuples across all major steps
-    rewards_flat = []
-    for step_rewards in q_threshold_rewards_major.values():
-        rewards_flat.extend(step_rewards)
+from collections import defaultdict
+import numpy as np
 
-    # Now chunk the flat rewards list into timesteps
-    rewards_per_step = [[] for _ in range(num_timesteps)]
-    chunk_size = len(rewards_flat) // num_timesteps
+def get_avg_rewards_per_timestep_single(all_rewards_by_step, num_timesteps):
+    """
+    Compute average reward per timestep from a dictionary mapping
+    step -> list of rewards.
 
-    for i in range(num_timesteps):
-        start = i * chunk_size
-        end = (i + 1) * chunk_size if i < num_timesteps - 1 else len(rewards_flat)
-        rewards_per_step[i] = [r[2] for r in rewards_flat[start:end]]
+    Args:
+        all_rewards_by_step (dict): keys are steps (ints), values are lists of rewards (floats)
+        num_timesteps (int): total number of timesteps to consider
 
-    return rewards_per_step
+    Returns:
+        List of average rewards per timestep (float or np.nan if no rewards)
+    """
+    avg_rewards = []
+    steps_seen = sorted(all_rewards_by_step.keys())
+    print(f"Steps with rewards: {steps_seen}")
+
+    for step in range(num_timesteps):
+        rewards = all_rewards_by_step.get(step, [])
+        if rewards:
+            avg_rewards.append(np.mean(rewards))
+        else:
+            avg_rewards.append(np.nan)
+
+    return avg_rewards
+
+
+
