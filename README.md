@@ -93,6 +93,8 @@ of the [Open Government 3.0][ogl] licence.
 
 code to run -
 
-python 8 environemnet 
+python 8 environment
+
+install requirements then run
 
 & C:\Users\Himanshi\Documents\SynPathToy-main\venv38\Scripts\python.exe c:/Users/Himanshi/Documents/SynPathToy-main/project/main.py
